@@ -1,0 +1,30 @@
+/* Админка резервных копий: самостоятельные классы, согласованные с другими плагинами. */
+.backup-admin { max-width: 52rem; font-size: 14px; }
+.backup-admin a { color: #1d4ed8; }
+.backup-h1 { font-size: 1.6rem; font-weight: 700; margin: 0 0 .5rem; }
+.backup-h2 { font-size: 1.1rem; font-weight: 600; margin: 0 0 .75rem; }
+.backup-muted { color: #64748b; }
+.backup-admin > .backup-muted { margin: 0 0 1rem; }
+.backup-panel { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 1.25rem; margin: 1rem 0; }
+.backup-panel p { line-height: 1.5; }
+.backup-panel p:last-child { margin-bottom: 0; }
+.backup-panel--info { background: #f8fafc; }
+.backup-notice { border-radius: 6px; padding: .65rem .9rem; margin: 1rem 0; }
+.backup-notice--ok { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+.backup-notice--error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+.backup-btn { display: inline-flex; align-items: center; justify-content: center; padding: .42rem .8rem; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; color: #0f172a !important; font: inherit; text-decoration: none; cursor: pointer; white-space: nowrap; }
+.backup-btn:hover { background: #e2e8f0; }
+.backup-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+.backup-btn--primary { background: #0f172a; border-color: #0f172a; color: #fff !important; }
+.backup-btn--primary:hover { background: #1e293b; }
+.backup-btn--small { padding: .22rem .55rem; font-size: 13px; }
+.backup-btn--danger { color: #b91c1c !important; }
+.backup-btn--danger:hover { background: #fee2e2; }
+.backup-list { list-style: none; padding: 0; margin: .75rem 0 0; display: grid; gap: .5rem; }
+.backup-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .6rem; border: 1px solid #e2e8f0; border-radius: 8px; padding: .65rem .8rem; }
+.backup-file { min-width: 0; display: grid; gap: .15rem; }
+.backup-name { font-weight: 600; overflow-wrap: anywhere; }
+.backup-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; }
+.backup-actions form { margin: 0; }
+.backup-path { overflow-wrap: anywhere; }
+.backup-empty { margin: 0; }

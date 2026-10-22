@@ -19,7 +19,10 @@ return static function (PluginContext $plugin): void {
             $directory = null;
             $error = $e->getMessage();
         }
-        $plugin->render('admin', compact('backups', 'directory', 'error'), ['title' => 'Резервные копии']);
+        $plugin->render('admin', compact('backups', 'directory', 'error'), [
+            'title' => 'Резервные копии',
+            'styles' => [$plugin->assetUrl('admin.css')],
+        ]);
     });
 
     $plugin->adminRoute('POST', '/create', static function (PluginRequest $request, PluginContext $plugin) use ($archives): void {
@@ -31,7 +34,10 @@ return static function (PluginContext $plugin): void {
             http_response_code(500);
             $plugin->render('admin', [
                 'backups' => [], 'directory' => null, 'error' => 'Копия не создана: ' . $e->getMessage(),
-            ], ['title' => 'Резервные копии']);
+            ], [
+                'title' => 'Резервные копии',
+                'styles' => [$plugin->assetUrl('admin.css')],
+            ]);
         }
     });
 
