@@ -2,6 +2,7 @@
 /** @var PluginContext $plugin */
 /** @var list<array{name: string, size: int}> $backups */
 /** @var ?string $directory */
+/** @var ?int $keep */
 /** @var ?string $error */
 $e = [PluginContext::class, 'e'];
 ?>
@@ -16,7 +17,8 @@ $e = [PluginContext::class, 'e'];
 
         <section class="backup-panel" aria-labelledby="backup-create-title">
             <h2 class="backup-h2" id="backup-create-title">Создать копию</h2>
-            <p class="backup-muted">В ZIP войдут настройки, контент, медиафайлы, темы, плагины и их данные. Создание большой копии может занять несколько минут.</p>
+            <p class="backup-muted">В ZIP войдут настройки (включая <code>.env</code>), контент, медиафайлы, темы, плагины, их данные и заявки; кэш не входит. Архив конфиденциален: в нём пароли, ключи и персональные данные. Создание большой копии может занять несколько минут.</p>
+            <?php if ($keep !== null): ?><p class="backup-muted">Хранятся последние <?= (int) $keep ?> копий: после создания новой более старые удаляются.</p><?php endif; ?>
             <form method="post" action="<?= $e($plugin->adminUrl('/create')) ?>">
                 <?= $plugin->csrfField() ?>
                 <button class="backup-btn backup-btn--primary" type="submit">Создать резервную копию</button>

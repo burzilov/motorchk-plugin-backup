@@ -8,16 +8,40 @@ use RecursiveIteratorIterator;
 use RuntimeException;
 use ZipArchive;
 
-/** ZIP с путями относительно корня сайта: распаковывается поверх нового ядра. */
+/**
+ * ZIP с путями относительно корня сайта: распаковывается поверх нового ядра.
+ * Содержимое cache/ не копируется (папка остаётся пустой): кэш пересоздаётся ядром.
+ * После каждой новой копии хранятся только последние $keep архивов плагина.
+ */
 final class Archives
 {
     private const NAME = '/^backup-\d{8}T\d{6}Z-[a-f0-9]{8}$/D';
+    public const KEEP = 10;
+    /** Папка в корне сайта, содержимое которой не архивируется. */
+    public const CACHE = 'cache';
 
     private string $site;
     private string $directory;
+    private int $keep;
 
-    public function __construct(string $site, ?string $directory = null)
+    /** Число хранимых копий из MOTORCHK_BACKUP_KEEP: пусто — KEEP, иначе целое ≥ 1. */
+    public static function keepFrom(?string $value): int
     {
+        if ($value === null || $value === '') {
+            return self::KEEP;
+        }
+        if (!preg_match('/^[1-9][0-9]{0,3}$/D', $value)) {
+            throw new RuntimeException('MOTORCHK_BACKUP_KEEP должен быть целым числом от 1 до 9999');
+        }
+        return (int) $value;
+    }
+
+    public function __construct(string $site, ?string $directory = null, int $keep = self::KEEP)
+    {
+        if ($keep < 1) {
+            throw new RuntimeException('Нужно хранить хотя бы одну резервную копию');
+        }
+        $this->keep = $keep;
         $real = realpath($site);
         if ($real === false || !is_dir($real) || !is_dir($real . '/core')) {
             throw new RuntimeException('Не найден корень сайта с установленным core/');
@@ -67,6 +91,11 @@ final class Archives
     public function directory(): string
     {
         return $this->directory;
+    }
+
+    public function keep(): int
+    {
+        return $this->keep;
     }
 
     /** @return list<array{name: string, size: int}> */
@@ -177,12 +206,26 @@ final class Archives
             if (!rename($temporary, $final)) {
                 throw new RuntimeException('Не удалось опубликовать готовый архив');
             }
+            $this->rotate();
             return $name;
         } finally {
             if ($zip instanceof ZipArchive) $zip->close();
             if ($temporary !== null && is_file($temporary)) unlink($temporary);
             flock($lock, LOCK_UN);
             fclose($lock);
+        }
+    }
+
+    /**
+     * Удаляет архивы сверх последних $keep. Только в папке копий и только файлы с именем
+     * backup-<UTC>-<hex>.zip (listing()); остальные файлы не трогаются. Вызывается под блокировкой.
+     */
+    private function rotate(): void
+    {
+        foreach (array_slice($this->listing(), $this->keep) as $old) {
+            if (!unlink($this->directory . '/' . $old['name'] . '.zip')) {
+                throw new RuntimeException('Копия создана, но старый архив не удалён: ' . $old['name']);
+            }
         }
     }
 
@@ -193,7 +236,7 @@ final class Archives
         foreach (new FilesystemIterator($this->site, FilesystemIterator::SKIP_DOTS) as $top) {
             if ($top->getFilename() === 'core') continue;
             $this->record($top, $top->getFilename(), $out);
-            if (!$top->isDir()) continue;
+            if (!$top->isDir() || $top->getFilename() === self::CACHE) continue;
             $walk = new RecursiveIteratorIterator(
                 new RecursiveDirectoryIterator($top->getPathname(), FilesystemIterator::SKIP_DOTS),
                 RecursiveIteratorIterator::SELF_FIRST,

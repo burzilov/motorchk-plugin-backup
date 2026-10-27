@@ -16,7 +16,11 @@ try {
     }
     require $envFile;
     Env::load(rtrim($argv[1], '/') . '/.env');
-    $archive = new Archives($argv[1], getenv('MOTORCHK_BACKUP_DIR') ?: (Env::get('MOTORCHK_BACKUP_DIR') ?: null));
+    $archive = new Archives(
+        $argv[1],
+        getenv('MOTORCHK_BACKUP_DIR') ?: (Env::get('MOTORCHK_BACKUP_DIR') ?: null),
+        Archives::keepFrom(getenv('MOTORCHK_BACKUP_KEEP') ?: (Env::get('MOTORCHK_BACKUP_KEEP') ?: null)),
+    );
     $name = $archive->create();
     fwrite(STDOUT, $archive->file($name) . "\n");
 } catch (Throwable $e) {

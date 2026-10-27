@@ -75,6 +75,40 @@ try {
     check(count($archives->listing()) === 1, 'Неудачная попытка не создала архив');
     $archives->delete($name);
     check($archives->listing() === [], 'Удаление архива');
+
+    // Кэш: папка сохраняется пустой, содержимое не архивируется.
+    mkdir($site . '/cache/pages', 0700, true);
+    file_put_contents($site . '/cache/pages/x.html', 'cached');
+    mkdir($site . '/submissions/form', 0700, true);
+    file_put_contents($site . '/submissions/form/1.json', '{"name":"client"}');
+    $zip = new ZipArchive();
+    $zip->open($archives->file($archives->create()));
+    $entries = [];
+    for ($i = 0; $i < $zip->numFiles; $i++) $entries[] = $zip->getNameIndex($i);
+    $zip->close();
+    check(in_array('cache/', $entries, true) && !array_filter($entries, static fn($p) => str_starts_with($p, 'cache/') && $p !== 'cache/'), 'cache/ пустой, содержимое не входит');
+    check(in_array('.env', $entries, true) && in_array('submissions/form/1.json', $entries, true), '.env и заявки входят в архив');
+
+    // Ротация: только последние N архивов плагина, чужие файлы не трогаются.
+    foreach ($archives->listing() as $item) $archives->delete($item['name']);
+    $rotating = new Archives($site, null, 3);
+    $dir = $rotating->directory();
+    file_put_contents($dir . '/notes.txt', 'keep');
+    file_put_contents($dir . '/backup-manual.zip', 'keep');
+    file_put_contents($dir . '/backup-19990101T000000Z-deadbeef.zip.bak', 'keep');
+    $old = ['backup-20000101T000000Z-00000001', 'backup-20000102T000000Z-00000002', 'backup-20000103T000000Z-00000003'];
+    foreach ($old as $n) { file_put_contents($dir . '/' . $n . '.zip', 'old'); chmod($dir . '/' . $n . '.zip', 0600); }
+    $fresh = $rotating->create();
+    $names = array_column($rotating->listing(), 'name');
+    check($names === [$fresh, $old[2], $old[1]], 'Ротация оставила 3 последних архива');
+    check(is_file($dir . '/notes.txt') && is_file($dir . '/backup-manual.zip') && is_file($dir . '/backup-19990101T000000Z-deadbeef.zip.bak'), 'Чужие файлы в папке копий не удалены');
+    check(Archives::keepFrom(null) === 10 && Archives::keepFrom('') === 10 && Archives::keepFrom('25') === 25, 'MOTORCHK_BACKUP_KEEP: по умолчанию 10');
+    foreach (['0', '-1', 'abc', '1.5', ' 3'] as $bad) {
+        try { Archives::keepFrom($bad); throw new RuntimeException('Accepted keep'); }
+        catch (RuntimeException $e) { check($e->getMessage() !== 'Accepted keep', 'Неверное MOTORCHK_BACKUP_KEEP отклонено: ' . $bad); }
+    }
+    $plugin = file_get_contents(dirname(__DIR__) . '/plugin.php');
+    check(str_contains($plugin, "jsonError('Не удалось удалить архив', 422)") && !str_contains($plugin, "'Не удалось удалить архив: ' . \$e->getMessage()"), 'Ошибка удаления без подробностей для посетителя');
     echo "ALL OK\n";
 } finally {
     rmTree($parent);

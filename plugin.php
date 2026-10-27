@@ -6,6 +6,7 @@ return static function (PluginContext $plugin): void {
     $archives = static fn(): Archives => new Archives(
         $plugin->path('site_path'),
         getenv('MOTORCHK_BACKUP_DIR') ?: (Env::get('MOTORCHK_BACKUP_DIR') ?: null),
+        Archives::keepFrom(getenv('MOTORCHK_BACKUP_KEEP') ?: (Env::get('MOTORCHK_BACKUP_KEEP') ?: null)),
     );
 
     $plugin->adminRoute('GET', '/', static function (PluginRequest $request, PluginContext $plugin) use ($archives): void {
@@ -13,13 +14,15 @@ return static function (PluginContext $plugin): void {
             $storage = $archives();
             $backups = $storage->listing();
             $directory = $storage->directory();
+            $keep = $storage->keep();
             $error = null;
         } catch (Throwable $e) {
             $backups = [];
             $directory = null;
+            $keep = null;
             $error = $e->getMessage();
         }
-        $plugin->render('admin', compact('backups', 'directory', 'error'), [
+        $plugin->render('admin', compact('backups', 'directory', 'keep', 'error'), [
             'title' => 'Резервные копии',
             'styles' => [$plugin->assetUrl('admin.css')],
         ]);
@@ -33,7 +36,7 @@ return static function (PluginContext $plugin): void {
         } catch (Throwable $e) {
             http_response_code(500);
             $plugin->render('admin', [
-                'backups' => [], 'directory' => null, 'error' => 'Копия не создана: ' . $e->getMessage(),
+                'backups' => [], 'directory' => null, 'keep' => null, 'error' => 'Копия не создана: ' . $e->getMessage(),
             ], [
                 'title' => 'Резервные копии',
                 'styles' => [$plugin->assetUrl('admin.css')],
@@ -62,7 +65,9 @@ return static function (PluginContext $plugin): void {
             $archives()->delete((string) $request->param('name'));
             header('Location: ' . $plugin->adminUrl('/') . '?deleted=1', true, 303);
         } catch (Throwable $e) {
-            $plugin->jsonError('Не удалось удалить архив: ' . $e->getMessage(), 422);
+            // Подробности (пути, причина) — только в журнал сервера, посетителю — общий текст.
+            error_log('backup: delete failed: ' . $e->getMessage());
+            $plugin->jsonError('Не удалось удалить архив', 422);
         }
     });
 };
