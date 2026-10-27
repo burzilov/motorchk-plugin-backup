@@ -1,7 +1,7 @@
 {
     "id": "backup",
     "name": "Резервные копии сайта",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "core": "^0.5",
     "license": "MIT",
     "entry": "plugin.php",

@@ -1,8 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.3.1 — 2026-10-28
 
 - Лицензия MIT: файл `LICENSE` (входит в архив релиза), поле `"license": "MIT"` в `plugin.json`, раздел «Лицензия» в README.
+- Автопубликация: при push тега `v<версия>` GitHub Actions (`.github/workflows/release.yml`) прогоняет тесты, собирает
+  архив `release.sh` и прикладывает его к GitHub Release. Код плагина не менялся.
 
 ## 0.3.0 — 2026-10-27
 

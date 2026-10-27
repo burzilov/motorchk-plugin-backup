@@ -1,0 +1,47 @@
+name: Release
+
+# Тег v<версия> → тесты → ./release.sh (архив dist/backup-<версия>.zip из тега) → GitHub Release с архивом.
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, zip
+          coverage: none
+
+      - name: Verify tag matches plugin.json version
+        run: |
+          VERSION=$(sed -n 's/^[[:space:]]*"version":[[:space:]]*"\([^"]*\)".*/\1/p' plugin.json | head -n1)
+          if [ "${GITHUB_REF_NAME}" != "v${VERSION}" ]; then
+            echo "Тег ${GITHUB_REF_NAME} не совпадает с version ${VERSION} в plugin.json"
+            exit 1
+          fi
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+
+      - name: Tests
+        run: php tests/run.php
+
+      - name: Build zip
+        run: ./release.sh
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/backup-${{ env.VERSION }}.zip
+          generate_release_notes: true
