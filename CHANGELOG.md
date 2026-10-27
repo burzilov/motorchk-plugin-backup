@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Лицензия MIT: файл `LICENSE` (входит в архив релиза), поле `"license": "MIT"` в `plugin.json`, раздел «Лицензия» в README.
+
 ## 0.3.0 — 2026-10-27
 
 - Требуется ядро motorchk 0.5 (`"core": "^0.5"`): настройки из `.env` — через `PluginContext::env()`,

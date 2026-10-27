@@ -10,7 +10,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 id=backup
-files=(plugin.json plugin.php bin lib templates assets README.md CHANGELOG.md)
+files=(plugin.json plugin.php bin lib templates assets README.md CHANGELOG.md LICENSE)
 push=false
 case "${1:-}" in
     --push) push=true ;;
