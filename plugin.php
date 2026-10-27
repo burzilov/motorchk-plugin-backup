@@ -5,8 +5,8 @@ use Backup\Archives;
 return static function (PluginContext $plugin): void {
     $archives = static fn(): Archives => new Archives(
         $plugin->path('site_path'),
-        getenv('MOTORCHK_BACKUP_DIR') ?: (Env::get('MOTORCHK_BACKUP_DIR') ?: null),
-        Archives::keepFrom(getenv('MOTORCHK_BACKUP_KEEP') ?: (Env::get('MOTORCHK_BACKUP_KEEP') ?: null)),
+        getenv('MOTORCHK_BACKUP_DIR') ?: ($plugin->env('MOTORCHK_BACKUP_DIR') ?: null),
+        Archives::keepFrom(getenv('MOTORCHK_BACKUP_KEEP') ?: ($plugin->env('MOTORCHK_BACKUP_KEEP') ?: null)),
     );
 
     $plugin->adminRoute('GET', '/', static function (PluginRequest $request, PluginContext $plugin) use ($archives): void {
