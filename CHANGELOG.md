@@ -5,6 +5,9 @@
 - Лицензия MIT: файл `LICENSE` (входит в архив релиза), поле `"license": "MIT"` в `plugin.json`, раздел «Лицензия» в README.
 - Автопубликация: при push тега `v<версия>` GitHub Actions (`.github/workflows/release.yml`) прогоняет тесты, собирает
   архив `release.sh` и прикладывает его к GitHub Release. Код плагина не менялся.
+- `plugin.json`: поле `"repository": "burzilov/motorchk-plugin-backup"` — где искать обновления. Схема релизов
+  фиксирована: тег `vX.Y.Z`, asset `backup-X.Y.Z.zip` с папкой `backup/` (внутри `plugin.json`). Ядро 0.5.6 поле не использует
+  и игнорирует.
 
 ## 0.3.0 — 2026-10-27
 

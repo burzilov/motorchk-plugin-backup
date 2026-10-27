@@ -4,6 +4,7 @@
     "version": "0.3.1",
     "core": "^0.5",
     "license": "MIT",
+    "repository": "burzilov/motorchk-plugin-backup",
     "entry": "plugin.php",
     "description": "Переносимые ZIP-копии сайта без ядра: контент, медиа, темы, плагины, настройки и данные.",
     "admin": {
