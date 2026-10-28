@@ -27,7 +27,7 @@ jobs:
 
       - name: Verify tag matches plugin.json version
         run: |
-          VERSION=$(sed -n 's/^[[:space:]]*"version":[[:space:]]*"\([^"]*\)".*/\1/p' plugin.json | head -n1)
+          VERSION=$(sed -n '/^[[:space:]]*"version":[[:space:]]*"[^"]*"/{s/^[[:space:]]*"version":[[:space:]]*"\([^"]*\)".*/\1/p;q;}' plugin.json)
           if [ "${GITHUB_REF_NAME}" != "v${VERSION}" ]; then
             echo "Тег ${GITHUB_REF_NAME} не совпадает с version ${VERSION} в plugin.json"
             exit 1

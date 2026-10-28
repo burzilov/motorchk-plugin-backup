@@ -20,9 +20,10 @@ esac
 
 [[ -z "$(git status --porcelain)" ]] || { echo "Рабочее дерево не чистое — закоммитьте или уберите изменения:" >&2; git status --short >&2; exit 1; }
 
-version=$(sed -n 's/^[[:space:]]*"version":[[:space:]]*"\([^"]*\)".*/\1/p' plugin.json | head -n1)
+# Первое совпадение — sed …;q без `| head -n1`: под pipefail ранний выход head давал бы SIGPIPE (exit 141) на большом файле
+version=$(sed -n '/^[[:space:]]*"version":[[:space:]]*"[^"]*"/{s/^[[:space:]]*"version":[[:space:]]*"\([^"]*\)".*/\1/p;q;}' plugin.json)
 [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Не удалось прочитать version из plugin.json" >&2; exit 1; }
-heading=$(sed -n 's/^## \([^ ]*\).*/\1/p' CHANGELOG.md | head -n1)
+heading=$(sed -n '/^## /{s/^## \([^ ]*\).*/\1/p;q;}' CHANGELOG.md)
 [[ "$heading" == "$version" ]] || { echo "Первая запись CHANGELOG.md — «${heading:-нет}», а в plugin.json — $version" >&2; exit 1; }
 
 tag="v$version"
