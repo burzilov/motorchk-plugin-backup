@@ -1,8 +1,8 @@
 {
     "id": "backup",
     "name": "Резервные копии сайта",
-    "version": "0.3.2",
-    "core": ">=0.5.0 <0.7.0",
+    "version": "0.3.3",
+    "core": ">=0.5.0",
     "license": "MIT",
     "repository": "burzilov/motorchk-plugin-backup",
     "entry": "plugin.php",
